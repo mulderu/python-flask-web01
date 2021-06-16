@@ -30,6 +30,7 @@ class ProductSchema(ma.Schema):
     class Meta:
         fields = ('id', 'name', 'description', 'price', 'qty')
 
+# init schema
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
@@ -38,18 +39,36 @@ def index():
     # return render_template('index.html')
     return jsonify({'msg': 'helo index'})
 
-'''
-@app.route('/users')
-def users():
-    return render_template('users.html', users = Users)
+@app.route('/product', methods=['POST'])
+def post_product():
+    name = request.json['name']
+    description = request.json['description']
+    price = request.json['price']
+    qty = request.json['qty']
+    new_product = Product(name, description, price, qty)
+    db.session.add(new_product)
+    db.session.commit()
+    return product_schema.jsonify(new_product)
 
-@app.route('/user/<int:id>/')
-def user(id):
-    for user in Users:
-        if user['id'] == id:
-            _user = user
-    return render_template('user.html', user = _user)
+@app.route('/products', methods=['GET'])
+def list_product():
+    products = Product.query.all()
+    result = products_schema.dump(products)
+    return jsonify(result)
+
+'''
+table create
+
+python
+
+import app
+
+db = app.db
+db.create_all()
+exit()
+
 '''
 
 if __name__ == '__main__':
     app.run(debug=True)
+
