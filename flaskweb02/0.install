@@ -1,0 +1,1 @@
+pip install flask requests flask-sqlalchemy flask-marshmallow marshmallow-sqlalchemy
