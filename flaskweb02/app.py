@@ -11,6 +11,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+
 # example model
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,6 +42,7 @@ def index():
 
 @app.route('/product', methods=['POST'])
 def post_product():
+    db.create_all()
     name = request.json['name']
     description = request.json['description']
     price = request.json['price']
@@ -54,15 +56,47 @@ def post_product():
 def list_product():
     products = Product.query.all()
     result = products_schema.dump(products)
-    return jsonify(result)
+    # return jsonify(result)
+    return jsonify({'data':result, 'size': len(result)})
+
+# get / select
+@app.route('/product/<id>', methods=['GET'])
+def get_product(id):
+    product = Product.query.get(id)
+    return product_schema.jsonify(product)
+
+
+# update
+@app.route('/product/<id>', methods=['PUT'])
+def put_product(id):
+    product = Product.query.get(id)
+
+    name = request.json['name']
+    description = request.json['description']
+    price = request.json['price']
+    qty = request.json['qty']
+
+    product.name = name
+    product.description = description
+    product.price = price
+    product.qty = qty
+
+    db.session.commit()
+    return product_schema.jsonify(product)
+
+# delete
+@app.route('/product/<id>', methods=['DELETE'])
+def del_product(id):
+    product = Product.query.get(id)
+    db.session.delete(product)
+    db.session.commit()
+    return product_schema.jsonify(product)
 
 '''
 table create
-
 python
 
 import app
-
 db = app.db
 db.create_all()
 exit()
